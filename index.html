@@ -203,13 +203,13 @@
                             </thead>
                             <tbody class="divide-y">
                                 <tr>
-                                    <td class="p-3 font-semibold"><a href="https://nord-s.ru/" target="_blank" class="text-blue-600 hover:underline">Норд Инструмент</a></td>
+                                    <td class="p-3 font-semibold"><a href="https://nordinstrument.com/" target="_blank" class="text-blue-600 hover:underline">Норд Инструмент</a></td>
                                     <td class="p-3">2 точки, доп. услуги (продажа, ремонт), хороший сайт, постоплата для юрлиц</td>
                                     <td class="p-3">Высокий ценовой сегмент, стандартная модель с залогом</td>
                                     <td class="p-3">Диверсификация бизнеса</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-3 font-semibold"><a href="https://stroiarenda.ru/" target="_blank" class="text-blue-600 hover:underline">Стройаренда</a></td>
+                                    <td class="p-3 font-semibold"><a href="https://stroiarenda.com/" target="_blank" class="text-blue-600 hover:underline">Стройаренда</a></td>
                                     <td class="p-3">Аренда спецтехники, известное имя</td>
                                     <td class="p-3">Устаревший сайт, аренда без залога только для "постоянных"</td>
                                     <td class="p-3">Работа с крупной техникой</td>
@@ -221,7 +221,7 @@
                                     <td class="p-3">Фокус на качестве парка</td>
                                 </tr>
                                  <tr>
-                                    <td class="p-3 font-semibold">Частные объявления (Avito)</td>
+                                    <td class="p-3 font-semibold"><a href="https://www.avito.ru/arkhangelsk/predlozheniya_uslug/oborudovanie_proizvodstvo-ASgBAgICAUSYC_SbAQ?q=%D0%BF%D1%80%D0%BE%D0%BA%D0%B0%D1%82+%D0%B8%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0" target="_blank" class="text-blue-600 hover:underline">Частные объявления (Avito)</a></td>
                                     <td class="p-3">Низкая цена</td>
                                     <td class="p-3">Нет гарантий, риски, узкий выбор, нет юр. оформления</td>
                                     <td class="p-3">Демпинг</td>
@@ -504,8 +504,8 @@ document.addEventListener('DOMContentLoaded', function () {
         headers.className = 'grid grid-cols-12 gap-2 items-center text-sm font-semibold p-2 border-b';
         headers.innerHTML = `
             <div class="col-span-12 md:col-span-6">Наименование</div>
-            <div class="col-span-4 md:col-span-2 text-center">Закупка, ₽</div>
-            <div class="col-span-4 md:col-span-2 text-center">Аренда, ₽</div>
+            <div class="col-span-4 md:col-span-2 text-center">Цена закупки, ₽</div>
+            <div class="col-span-4 md:col-span-2 text-center">Аренда/сутки, ₽</div>
             <div class="col-span-4 md:col-span-2 text-center">Аренд/мес</div>
         `;
         toolCatalogWrapper.appendChild(headers);
@@ -545,12 +545,11 @@ document.addEventListener('DOMContentLoaded', function () {
             toolCatalogWrapper.appendChild(categoryWrapperEl);
         });
 
-        // Event Listeners for collapsibles
         const mainCapexHeader = document.getElementById('capex-collapsible-header');
         mainCapexHeader.addEventListener('click', () => {
              const content = document.getElementById('tool-catalog-wrapper');
              const icon = mainCapexHeader.querySelector('span');
-             toggleCollapsible(content, icon);
+             toggleCollapsible(content, icon, true);
         });
         
         document.querySelectorAll('#tool-catalog-wrapper .collapsible-header').forEach(header => {
@@ -564,13 +563,13 @@ document.addEventListener('DOMContentLoaded', function () {
         toolCatalogWrapper.addEventListener('change', updateUI);
     }
     
-    function toggleCollapsible(content, icon) {
-        if (content.style.maxHeight) {
+    function toggleCollapsible(content, icon, isMain = false) {
+        if (content.style.maxHeight && content.style.maxHeight !== '0px') {
             content.style.maxHeight = null;
-            icon.style.transform = 'rotate(0deg)';
+            icon.style.transform = isMain ? 'rotate(0deg)' : 'rotate(0deg)';
         } else {
             content.style.maxHeight = content.scrollHeight + "px";
-            icon.style.transform = 'rotate(90deg)';
+            icon.style.transform = isMain ? 'rotate(180deg)' : 'rotate(90deg)';
         }
     }
     
