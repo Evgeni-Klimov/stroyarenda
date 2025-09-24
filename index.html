@@ -13,7 +13,7 @@
     <!-- Application Structure Plan: A tab-based single-page application is chosen for optimal user experience. This structure logically separates the core components of the business plan (Market, Finance, Pitch, Plan) into digestible sections. The user can easily navigate between deep-diving into market analysis, interacting with the financial model, reviewing the investor summary, and checking the implementation timeline without excessive scrolling. This approach prioritizes clarity and focused exploration of each distinct aspect of the business. -->
     <!-- Visualization & Content Choices: 
         - CAPEX Breakdown (Summary & Finance): Goal: Inform. Viz: Donut Chart. Interaction: Dynamically updates based on tool selection in the finance tab. Justification: Clearly visualizes the composition of the initial investment. Library: Chart.js (Canvas). NO SVG/Mermaid.
-        - Competitor Matrix (Marketing): Goal: Organize/Compare. Viz: Styled HTML Table. Justification: The most effective way to present structured comparative data about competitors. Method: Tailwind CSS. NO SVG/Mermaid.
+        - Competitor Matrix (Marketing): Goal: Organize/Compare. Viz: Styled HTML Table. Justification: The most effective and direct way to present structured comparative data about competitors. Method: Tailwind CSS. NO SVG/Mermaid.
         - Financial Projections (Finance): Goal: Analyze Change. Viz: Combined Bar and Line Chart. Interaction: A fully interactive model with controls for CAPEX (tool selection, prices) and OPEX (rent, salaries, marketing) dynamically updates the chart. Justification: Provides a comprehensive, interactive view of the project's financial viability. Library: Chart.js (Canvas). NO SVG/Mermaid.
         - Payback Period (Finance): Goal: Analyze Change. Viz: Line Chart with area fill. Interaction: Also updates with all financial controls. Justification: Visually pinpoints the break-even point. Library: Chart.js (Canvas). NO SVG/Mermaid.
         - Implementation Plan (Plan): Goal: Organize. Viz: Structured HTML/CSS Timeline. Justification: Clearly presents sequential steps and milestones. Method: Tailwind CSS. NO SVG/Mermaid.
@@ -257,11 +257,11 @@
                     <div class="grid lg:grid-cols-2 gap-8 mb-8">
                         <!-- CAPEX -->
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                             <div class="collapsible-header flex justify-between items-center p-2">
+                             <div id="capex-collapsible-header" class="collapsible-header flex justify-between items-center p-2">
                                 <h3 class="text-xl font-semibold text-gray-800">Инвестиции в оборудование (CAPEX)</h3>
                                 <span class="transform transition-transform duration-300">▼</span>
                             </div>
-                            <div id="tool-catalog" class="collapsible-content">
+                            <div id="tool-catalog-wrapper" class="collapsible-content">
                                 <!-- Catalog will be populated by JS -->
                             </div>
                              <div class="mt-4 border-t pt-4 p-2">
@@ -480,10 +480,7 @@ document.addEventListener('DOMContentLoaded', function () {
             marketingLaunch: 150000
         },
         workingCapital: 1000000,
-        fixedOpex: {
-            rent: 42000,
-            fot: 200000,
-            marketing: 50000,
+        baseOpex: {
             bookkeeping: 10000,
             software: 2000,
             insurance: 1500,
@@ -498,13 +495,24 @@ document.addEventListener('DOMContentLoaded', function () {
         seasonality: [-0.2, -0.2, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, -0.1, -0.1, -0.1, -0.2],
     };
 
-    const toolCatalogContainer = document.getElementById('tool-catalog');
+    const toolCatalogWrapper = document.getElementById('tool-catalog-wrapper');
 
     function populateToolCatalog() {
         const categories = [...new Set(toolCatalogData.map(t => t.category))];
+        
+        const headers = document.createElement('div');
+        headers.className = 'grid grid-cols-12 gap-2 items-center text-sm font-semibold p-2 border-b';
+        headers.innerHTML = `
+            <div class="col-span-12 md:col-span-6">Наименование</div>
+            <div class="col-span-4 md:col-span-2 text-center">Закупка, ₽</div>
+            <div class="col-span-4 md:col-span-2 text-center">Аренда, ₽</div>
+            <div class="col-span-4 md:col-span-2 text-center">Аренд/мес</div>
+        `;
+        toolCatalogWrapper.appendChild(headers);
+
         categories.forEach(category => {
-            const categoryWrapper = document.createElement('div');
-            categoryWrapper.className = 'border-t';
+            const categoryWrapperEl = document.createElement('div');
+            categoryWrapperEl.className = 'border-t';
             const header = document.createElement('div');
             header.className = 'collapsible-header flex justify-between items-center p-2 bg-gray-100 hover:bg-gray-200';
             header.innerHTML = `<h4 class="font-semibold">${category}</h4><span class="transform transition-transform duration-300">▶</span>`;
@@ -523,44 +531,54 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="col-span-12 md:col-span-6 flex items-center">
                         <input type="checkbox" data-prop="checked" class="mr-2" ${tool.checked ? 'checked' : ''}>
                         <label>${tool.name} (x${tool.qty})</label>
-                        <span class="ml-auto text-xs text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded"> ${tool.demand}%</span>
+                        <span class="ml-auto text-xs text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded" title="Процент востребованности">${tool.demand}%</span>
                     </div>
-                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="purchase" class="input-number-sm" value="${tool.purchase}"></div>
-                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="rent" class="input-number-sm" value="${tool.rent}"></div>
-                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="rentals" class="input-number-sm" value="${tool.rentals}"></div>
+                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="purchase" class="input-number-sm text-center" value="${tool.purchase}"></div>
+                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="rent" class="input-number-sm text-center" value="${tool.rent}"></div>
+                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="rentals" class="input-number-sm text-center" value="${tool.rentals}"></div>
                 `;
                 ul.appendChild(li);
             });
             content.appendChild(ul);
-            categoryWrapper.appendChild(header);
-            categoryWrapper.appendChild(content);
-            toolCatalogContainer.appendChild(categoryWrapper);
+            categoryWrapperEl.appendChild(header);
+            categoryWrapperEl.appendChild(content);
+            toolCatalogWrapper.appendChild(categoryWrapperEl);
         });
 
-        document.querySelectorAll('.collapsible-header').forEach(header => {
+        // Event Listeners for collapsibles
+        const mainCapexHeader = document.getElementById('capex-collapsible-header');
+        mainCapexHeader.addEventListener('click', () => {
+             const content = document.getElementById('tool-catalog-wrapper');
+             const icon = mainCapexHeader.querySelector('span');
+             toggleCollapsible(content, icon);
+        });
+        
+        document.querySelectorAll('#tool-catalog-wrapper .collapsible-header').forEach(header => {
             header.addEventListener('click', () => {
                 const content = header.nextElementSibling;
                 const icon = header.querySelector('span');
-                if (content.style.maxHeight) {
-                    content.style.maxHeight = null;
-                    icon.style.transform = 'rotate(0deg)';
-                } else {
-                    content.style.maxHeight = content.scrollHeight + "px";
-                    icon.style.transform = 'rotate(90deg)';
-                }
+                toggleCollapsible(content, icon);
             });
         });
-        
-        toolCatalogContainer.addEventListener('change', updateUI);
+
+        toolCatalogWrapper.addEventListener('change', updateUI);
+    }
+    
+    function toggleCollapsible(content, icon) {
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            icon.style.transform = 'rotate(0deg)';
+        } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+            icon.style.transform = 'rotate(90deg)';
+        }
     }
     
     function calculateFinancials() {
-        // Read current state from interactive elements
-        const selectedTools = [];
         let toolCapex = 0;
-        let monthlyRevenue = 0;
+        let baseMonthlyRevenue = 0;
         
-        document.querySelectorAll('#tool-catalog li').forEach(li => {
+        document.querySelectorAll('#tool-catalog-wrapper li[data-id]').forEach(li => {
             const toolId = li.dataset.id;
             const originalTool = toolCatalogData.find(t => t.id === toolId);
             const isChecked = li.querySelector('[data-prop="checked"]').checked;
@@ -571,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const rentals = parseFloat(li.querySelector('[data-prop="rentals"]').value) || 0;
                 
                 toolCapex += purchasePrice * originalTool.qty;
-                monthlyRevenue += rentPrice * rentals * originalTool.qty;
+                baseMonthlyRevenue += rentPrice * rentals * originalTool.qty;
             }
         });
 
@@ -582,23 +600,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const rentOpex = parseFloat(document.getElementById('rentSlider').value);
         const fotOpex = parseFloat(document.getElementById('fotSlider').value);
         const marketingOpex = parseFloat(document.getElementById('marketingSliderFin').value);
+        const baseOpex = Object.values(baseline.baseOpex).reduce((a, b) => a + b, 0);
         
-        const fixedOpexTotal = rentOpex + fotOpex + marketingOpex 
-            + baseline.fixedOpex.bookkeeping + baseline.fixedOpex.software 
-            + baseline.fixedOpex.insurance + baseline.fixedOpex.admin;
+        const fixedOpexTotal = rentOpex + fotOpex + marketingOpex + baseOpex;
 
-        const results = {
-            revenue: [], ebitda: [], netProfit: [], cumulativeCashFlow: [], toolCapex
-        };
-        
+        const results = { revenue: [], netProfit: [], cumulativeCashFlow: [], toolCapex };
         let cumulativeFlow = -totalInvestment;
-        
         const utilizationGrowth = [0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1, 1, 1, 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2];
 
         for (let i = 0; i < 36; i++) {
             const seasonalFactor = 1 + baseline.seasonality[i % 12];
-            const currentRevenue = monthlyRevenue * utilizationGrowth[i] * seasonalFactor;
-            
+            const currentRevenue = baseMonthlyRevenue * utilizationGrowth[i] * seasonalFactor;
             const variableCostsTotal = currentRevenue * Object.values(baseline.variableOpexRate).reduce((a, b) => a + b, 0);
             const totalOpex = fixedOpexTotal + variableCostsTotal;
 
@@ -606,20 +618,18 @@ document.addEventListener('DOMContentLoaded', function () {
             const ebit = ebitda - depreciationMonthly;
             const tax = ebit > 0 ? ebit * baseline.taxRate : 0;
             const netProfit = ebit - tax;
-            
             const cashFlow = netProfit + depreciationMonthly;
             cumulativeFlow += cashFlow;
 
             results.revenue.push(currentRevenue);
-            results.ebitda.push(ebitda);
             results.netProfit.push(netProfit);
             results.cumulativeCashFlow.push(cumulativeFlow);
         }
-
         return results;
     }
 
     function calculateIRR(cashflows, initialInvestment) {
+        if (initialInvestment === 0) return 0;
         const flows = [-initialInvestment, ...cashflows];
         let irr = 0.1;
         let npv = 1;
