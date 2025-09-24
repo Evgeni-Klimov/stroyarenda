@@ -9,13 +9,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: A single-page dashboard with tab-based navigation for easy access to key sections: Summary, Market Analysis, Financial Model, Operations, and Insurance. This structure is chosen for its clarity and user-friendliness, allowing a potential investor or owner to quickly navigate to the information they need without overwhelming scrolling. The core of the application is the interactive Financial Model, enabling users to adjust key variables and immediately see the impact, which is the most effective way to explore the business's potential. -->
+    <!-- Chosen Palette: Calm Harmony (Warm Neutrals) -->
+    <!-- Application Structure Plan: A tab-based single-page application is chosen for optimal user experience. This structure logically separates the core components of the business plan (Market, Finance, Pitch, Plan) into digestible sections. The user can easily navigate between deep-diving into market analysis, interacting with the financial model, reviewing the investor summary, and checking the implementation timeline without excessive scrolling. This approach prioritizes clarity and focused exploration of each distinct aspect of the business. -->
     <!-- Visualization & Content Choices: 
-        - Initial Investment: Goal: Inform. Viz: Donut Chart. Interaction: Hover for details. Justification: Clearly shows the proportion of startup costs. Library: Chart.js.
-        - Financial Projections: Goal: Compare & Analyze Change. Viz: Combined Bar (Revenue/Costs) and Line (Profit) Chart. Interaction: Sliders to change assumptions update the chart dynamically. Justification: Provides a comprehensive, interactive view of the financial viability over time. Library: Chart.js.
-        - Payback Period: Goal: Analyze Change. Viz: Line Chart showing cumulative profit. Interaction: Dynamically updated by financial sliders. Justification: Visualizes the key investment metric—time to profitability. Library: Chart.js.
-        - Operational Workflow & Insurance Model: Goal: Organize. Viz: Styled HTML/CSS diagrams. Interaction: Static. Justification: Clearly explains complex processes without requiring complex visualizations, focusing on readability. Method: Tailwind CSS.
+        - CAPEX Breakdown (Summary & Finance): Goal: Inform. Viz: Donut Chart. Interaction: Dynamically updates based on tool selection in the finance tab. Justification: Clearly visualizes the composition of the initial investment. Library: Chart.js (Canvas). NO SVG/Mermaid.
+        - Competitor Matrix (Marketing): Goal: Organize/Compare. Viz: Styled HTML Table. Justification: The most effective way to present structured comparative data about competitors. Method: Tailwind CSS. NO SVG/Mermaid.
+        - Financial Projections (Finance): Goal: Analyze Change. Viz: Combined Bar and Line Chart. Interaction: A fully interactive model with controls for CAPEX (tool selection, prices) and OPEX (rent, salaries, marketing) dynamically updates the chart. Justification: Provides a comprehensive, interactive view of the project's financial viability. Library: Chart.js (Canvas). NO SVG/Mermaid.
+        - Payback Period (Finance): Goal: Analyze Change. Viz: Line Chart with area fill. Interaction: Also updates with all financial controls. Justification: Visually pinpoints the break-even point. Library: Chart.js (Canvas). NO SVG/Mermaid.
+        - Implementation Plan (Plan): Goal: Organize. Viz: Structured HTML/CSS Timeline. Justification: Clearly presents sequential steps and milestones. Method: Tailwind CSS. NO SVG/Mermaid.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -25,8 +26,8 @@
             color: #383838;
         }
         .tab-active {
-            border-bottom-color: #C5A07A;
-            color: #C5A07A;
+            border-bottom-color: #A37F5A;
+            color: #A37F5A;
             font-weight: 600;
         }
         .tab-inactive {
@@ -74,287 +75,359 @@
             appearance: none;
             width: 20px;
             height: 20px;
-            background: #C5A07A;
+            background: #A37F5A;
             cursor: pointer;
             border-radius: 50%;
         }
         input[type="range"]::-moz-range-thumb {
             width: 20px;
             height: 20px;
-            background: #C5A07A;
+            background: #A37F5A;
             cursor: pointer;
             border-radius: 50%;
+        }
+        .collapsible-header {
+            cursor: pointer;
+        }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .input-number-sm {
+            width: 6rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
         }
     </style>
 </head>
 <body class="antialiased">
     <div class="container mx-auto px-4 py-8 max-w-7xl">
         <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Бизнес по прокату инструмента</h1>
-            <p class="text-xl text-gray-500 mt-2">Интерактивная финансовая модель и бизнес-план для г. Архангельск</p>
+            <h1 class="text-4xl font-bold text-gray-800">Инновационный сервис проката инструмента</h1>
+            <p class="text-xl text-gray-500 mt-2">Комплексное исследование и бизнес-модель для г. Архангельск</p>
         </header>
 
         <div class="border-b border-gray-200 mb-8">
-            <nav class="flex justify-center -mb-px space-x-6">
-                <button data-tab="summary" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Резюме проекта</button>
-                <button data-tab="market" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-inactive">Анализ рынка</button>
+            <nav class="flex flex-wrap justify-center -mb-px space-x-6">
+                <button data-tab="summary" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Резюме</button>
+                <button data-tab="market-research" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-inactive">Маркет. исследование</button>
                 <button data-tab="finance" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-inactive">Финансовая модель</button>
-                <button data-tab="operations" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-inactive">Операционный план</button>
-                <button data-tab="insurance" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-inactive">Работа со страховой</button>
+                <button data-tab="investor-pitch" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-inactive">Презентация</button>
+                <button data-tab="implementation" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-inactive">План реализации</button>
             </nav>
         </div>
 
         <main>
             <section id="summary" class="content-section active">
                 <div class="card">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Ключевые аспекты проекта</h2>
-                    <p class="text-gray-600 mb-6">Этот раздел представляет собой краткий обзор всего бизнес-плана. Здесь собраны основные цели, миссия компании и ключевые финансовые показатели, которые дают общее представление о потенциале и структуре бизнеса по аренде строительного и ремонтного инструмента в Архангельске.</p>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="p-6 bg-amber-50 rounded-lg">
-                            <h3 class="font-semibold text-lg text-amber-800">Миссия</h3>
-                            <p class="text-amber-700 mt-2">Предоставить жителям и малому бизнесу Архангельска доступ к качественному профессиональному инструменту без необходимости его покупки, экономя их деньги и время.</p>
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Резюме проекта</h2>
+                    <p class="text-gray-600 mb-6">Проект предполагает создание технологичного сервиса по прокату строительного инструмента в Архангельске. Ключевые отличия от конкурентов — универсальная модель аренды без денежного залога (заменяется страховым взносом), современная онлайн-платформа для бронирования и специальная программа лояльности для B2B-клиентов. Цель — занять лидирующие позиции на рынке за счет высокого качества сервиса и операционной эффективности.</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-center mb-8">
+                         <div class="p-4 bg-amber-50 rounded-lg">
+                            <h3 class="text-sm font-semibold text-amber-800">Объем инвестиций</h3>
+                            <p class="text-2xl font-bold text-amber-900 mt-1" id="summary_investment">4,850,000 ₽</p>
                         </div>
-                        <div class="p-6 bg-blue-50 rounded-lg">
-                            <h3 class="font-semibold text-lg text-blue-800">Цели проекта</h3>
-                            <ul class="list-disc list-inside text-blue-700 mt-2 space-y-1">
-                                <li>Занять 15% рынка аренды инструмента в городе в течение 2 лет.</li>
-                                <li>Достичь точки безубыточности в течение 8-10 месяцев.</li>
-                                <li>Сформировать базу из 500+ постоянных клиентов за первый год.</li>
-                                <li>Обеспечить полную окупаемость инвестиций за 18-24 месяца.</li>
-                            </ul>
+                        <div class="p-4 bg-sky-50 rounded-lg">
+                            <h3 class="text-sm font-semibold text-sky-800">Срок окупаемости</h3>
+                            <p class="text-2xl font-bold text-sky-900 mt-1" id="summary_payback">28 мес.</p>
                         </div>
-                        <div class="p-6 bg-green-50 rounded-lg">
-                            <h3 class="font-semibold text-lg text-green-800">Ключевые показатели (прогноз)</h3>
-                            <div class="mt-2 space-y-2 text-green-700">
-                                <p><strong>Инвестиции:</strong> <span id="summary_invest">850 000</span> ₽</p>
-                                <p><strong>Срок окупаемости:</strong> <span id="summary_payback">21</span> мес.</p>
-                                <p><strong>Средняя рентабельность:</strong> 25-30%</p>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <h3 class="text-sm font-semibold text-green-800">ROI (за 3 года)</h3>
+                            <p class="text-2xl font-bold text-green-900 mt-1" id="summary_roi">145%</p>
+                        </div>
+                        <div class="p-4 bg-indigo-50 rounded-lg">
+                            <h3 class="text-sm font-semibold text-indigo-800">Выручка (3-й год)</h3>
+                            <p class="text-2xl font-bold text-indigo-900 mt-1" id="summary_revenue_y3">12.45 млн ₽</p>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700 text-center">Структура стартовых инвестиций (CAPEX)</h3>
+                        <div class="chart-container h-64 md:h-80">
+                            <canvas id="capexChartSummary"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="market-research" class="content-section">
+                <div class="card">
+                     <h2 class="text-2xl font-bold mb-4 text-gray-700">Детальное маркетинговое исследование</h2>
+                     <p class="text-gray-600 mb-6">Рынок проката инструмента в Архангельске является зрелым и высококонкурентным. Успех нового игрока зависит не от ценовой войны, а от способности предложить принципиально лучший клиентский опыт и уникальные условия, решающие "боли" как профессиональных строителей, так и частных клиентов.</p>
+
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                         <div class="bg-gray-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-semibold mb-3">Размер и потенциал рынка</h3>
+                            <p class="text-gray-600 text-sm">Основа спроса — стабильная строительная активность в регионе.</p>
+                            <div class="mt-4 space-y-3">
+                                <div class="flex items-start space-x-3">
+                                    <span class="text-2xl font-bold text-blue-600">57</span>
+                                    <p class="text-sm">млрд рублей инвестировано в строительную отрасль за последние 5 лет.</p>
+                                 </div>
+                                 <div class="flex items-start space-x-3">
+                                    <span class="text-2xl font-bold text-blue-600">2.1</span>
+                                    <p class="text-sm">млн м² жилья введено в эксплуатацию за тот же период.</p>
+                                 </div>
+                                  <div class="flex items-start space-x-3">
+                                    <span class="text-2xl font-bold text-blue-600">18+</span>
+                                    <p class="text-sm">компаний уже работают на рынке проката инструмента в городе по данным 2GIS.</p>
+                                 </div>
                             </div>
+                         </div>
+                         <div class="bg-gray-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-semibold mb-3">Целевая аудитория</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">B2B (Основной сегмент)</h4>
+                                    <p class="text-sm text-gray-600">Строительные бригады, частные мастера, подрядчики. Ценят надежность, ассортимент и гибкие условия оплаты (постоплата).</p>
+                                </div>
+                                 <div>
+                                    <h4 class="font-bold text-gray-800">B2C (Вторичный сегмент)</h4>
+                                    <p class="text-sm text-gray-600">Владельцы квартир (DIY-ремонт), дачники. Ценят удобство, простоту оформления и отсутствие больших залогов.</p>
+                                </div>
+                            </div>
+                         </div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-4">Анализ ключевых конкурентов</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 font-medium">Конкурент</th>
+                                    <th class="p-3 font-medium">Сильные стороны</th>
+                                    <th class="p-3 font-medium">Слабые стороны</th>
+                                    <th class="p-3 font-medium">Ключевая особенность</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr>
+                                    <td class="p-3 font-semibold"><a href="https://nord-s.ru/" target="_blank" class="text-blue-600 hover:underline">Норд Инструмент</a></td>
+                                    <td class="p-3">2 точки, доп. услуги (продажа, ремонт), хороший сайт, постоплата для юрлиц</td>
+                                    <td class="p-3">Высокий ценовой сегмент, стандартная модель с залогом</td>
+                                    <td class="p-3">Диверсификация бизнеса</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-semibold"><a href="https://stroiarenda.ru/" target="_blank" class="text-blue-600 hover:underline">Стройаренда</a></td>
+                                    <td class="p-3">Аренда спецтехники, известное имя</td>
+                                    <td class="p-3">Устаревший сайт, аренда без залога только для "постоянных"</td>
+                                    <td class="p-3">Работа с крупной техникой</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-semibold"><a href="https://instrumenttut29.ru/" target="_blank" class="text-blue-600 hover:underline">ИнструментТут29</a></td>
+                                    <td class="p-3">Качественная техника, гибкие сроки</td>
+                                    <td class="p-3">Нет онлайн-бронирования, стандартные условия</td>
+                                    <td class="p-3">Фокус на качестве парка</td>
+                                </tr>
+                                 <tr>
+                                    <td class="p-3 font-semibold">Частные объявления (Avito)</td>
+                                    <td class="p-3">Низкая цена</td>
+                                    <td class="p-3">Нет гарантий, риски, узкий выбор, нет юр. оформления</td>
+                                    <td class="p-3">Демпинг</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mt-8 mb-4">Стратегическое позиционирование и УТП</h3>
+                    <p class="text-gray-600 mb-6">Мы не будем "дешевле", мы будем "удобнее и надежнее". Наше позиционирование — самый технологичный и клиентоориентированный сервис проката в городе.</p>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="p-4 border-l-4 border-amber-500 bg-amber-50">
+                            <h4 class="font-bold text-amber-900">1. Аренда без залога для всех</h4>
+                            <p class="text-sm text-amber-800 mt-1">Денежный залог заменяется небольшим обязательным страховым взносом. Это устраняет главный барьер для 90% клиентов.</p>
+                        </div>
+                        <div class="p-4 border-l-4 border-sky-500 bg-sky-50">
+                            <h4 class="font-bold text-sky-900">2. Цифровое удобство</h4>
+                             <p class="text-sm text-sky-800 mt-1">Сайт с онлайн-каталогом, бронированием в реальном времени, оплатой и электронным подписанием договора.</p>
+                        </div>
+                         <div class="p-4 border-l-4 border-green-500 bg-green-50">
+                            <h4 class="font-bold text-green-900">3. Программа "Мастер-Партнер"</h4>
+                             <p class="text-sm text-green-800 mt-1">Многоуровневая система лояльности для B2B-клиентов с накопительными скидками, приоритетным сервисом и постоплатой.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="finance" class="content-section">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Интерактивная финансовая модель</h2>
+                    <p class="text-gray-600 mb-6">Эта модель позволяет в реальном времени конструировать экономику проекта. Выбирайте инструменты для закупки, настраивайте их стоимость и арендные ставки, управляйте операционными расходами. Все итоговые показатели и графики обновятся автоматически.</p>
+
+                    <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                        <!-- CAPEX -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                             <div class="collapsible-header flex justify-between items-center p-2">
+                                <h3 class="text-xl font-semibold text-gray-800">Инвестиции в оборудование (CAPEX)</h3>
+                                <span class="transform transition-transform duration-300">▼</span>
+                            </div>
+                            <div id="tool-catalog" class="collapsible-content">
+                                <!-- Catalog will be populated by JS -->
+                            </div>
+                             <div class="mt-4 border-t pt-4 p-2">
+                                <div class="flex justify-between items-center text-lg font-bold">
+                                    <span>Итого закупка инструмента:</span>
+                                    <span id="totalToolCapex" class="text-blue-600">0 ₽</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- OPEX -->
+                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-4">
+                            <h3 class="text-xl font-semibold text-gray-800">Операционные расходы (OPEX)</h3>
+                             <div>
+                                <label for="rentSlider" class="block font-medium text-sm text-gray-700">Аренда помещения, ₽/мес</label>
+                                <input type="range" id="rentSlider" min="20000" max="80000" value="42000" step="1000">
+                                <div class="text-right font-medium text-gray-700 mt-1"><span id="rentValue">42 000</span> ₽</div>
+                            </div>
+                             <div>
+                                <label for="fotSlider" class="block font-medium text-sm text-gray-700">Фонд оплаты труда (ФОТ), ₽/мес</label>
+                                <input type="range" id="fotSlider" min="100000" max="300000" value="200000" step="5000">
+                                <div class="text-right font-medium text-gray-700 mt-1"><span id="fotValue">200 000</span> ₽</div>
+                            </div>
+                            <div>
+                                <label for="marketingSliderFin" class="block font-medium text-sm text-gray-700">Маркетинг и реклама, ₽/мес</label>
+                                <input type="range" id="marketingSliderFin" min="30000" max="100000" value="50000" step="1000">
+                                <div class="text-right font-medium text-gray-700 mt-1"><span id="marketingValueFin">50 000</span> ₽</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-8">
+                        <div class="p-4 bg-green-100 rounded-lg">
+                            <div class="text-sm text-green-800">Выручка (3 года)</div>
+                            <div id="fin_totalRevenue" class="text-2xl font-bold text-green-900">0 ₽</div>
+                        </div>
+                        <div class="p-4 bg-blue-100 rounded-lg">
+                            <div class="text-sm text-blue-800">Чистая прибыль (3 года)</div>
+                            <div id="fin_totalNetProfit" class="text-2xl font-bold text-blue-900">0 ₽</div>
+                        </div>
+                        <div class="p-4 bg-sky-100 rounded-lg">
+                            <div class="text-sm text-sky-800">Срок окупаемости</div>
+                            <div id="fin_payback" class="text-2xl font-bold text-sky-900">N/A</div>
+                        </div>
+                         <div class="p-4 bg-indigo-100 rounded-lg">
+                            <div class="text-sm text-indigo-800">IRR (ВНД)</div>
+                            <div id="fin_irr" class="text-2xl font-bold text-indigo-900">0%</div>
+                        </div>
+                    </div>
+
+                     <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-4 text-center">Прогноз прибылей и убытков (36 мес.)</h3>
+                        <div class="chart-container">
+                            <canvas id="pnlChart"></canvas>
                         </div>
                     </div>
                      <div class="mt-8">
-                        <h3 class="text-xl font-bold mb-4 text-gray-700">Структура стартовых инвестиций</h3>
-                        <div class="chart-container h-64 md:h-80">
-                            <canvas id="investmentChart"></canvas>
+                        <h3 class="text-xl font-semibold mb-4 text-center">Окупаемость проекта и накопленный денежный поток</h3>
+                         <div class="chart-container">
+                            <canvas id="paybackChart"></canvas>
                         </div>
                     </div>
+
                 </div>
             </section>
 
-            <section id="market" class="content-section">
+            <section id="investor-pitch" class="content-section">
                  <div class="card">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Анализ рынка и конкурентов в Архангельске</h2>
-                    <p class="text-gray-600 mb-6">Понимание рыночной среды — ключ к успеху. В этом разделе мы анализируем целевую аудиторию, ее потребности, а также текущую конкурентную ситуацию в Архангельске. Это позволяет определить наши преимущества и разработать эффективную стратегию позиционирования.</p>
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">Целевая аудитория</h3>
-                            <div class="space-y-4">
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    <h4 class="font-semibold">🏠 Частные лица (DIY-сегмент)</h4>
-                                    <p class="text-sm text-gray-600">Люди, делающие ремонт в квартире или на даче. Нуждаются в инструменте на короткий срок (1-3 дня). Ценят простоту аренды и консультацию.</p>
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Презентация для инвестора</h2>
+                    <p class="text-gray-600 mb-8">Краткая выжимка проекта, предназначенная для быстрой оценки его инвестиционной привлекательности. Все финансовые показатели в этом разделе напрямую связаны с интерактивной моделью и обновляются в реальном времени.</p>
+
+                    <div class="space-y-10">
+                        <div class="p-6 bg-gray-50 rounded-lg">
+                            <h3 class="text-sm uppercase font-semibold text-gray-500">Проблема рынка</h3>
+                            <p class="text-xl font-semibold text-gray-800 mt-2">Существующие сервисы проката в Архангельске требуют <span class="text-red-600">крупный денежный залог</span>, имеют устаревшие сайты без онлайн-бронирования и не предлагают системной работы с B2B-клиентами. Это создает неудобства и барьеры для пользователей.</p>
+                        </div>
+                        
+                         <div class="p-6 bg-gray-50 rounded-lg">
+                            <h3 class="text-sm uppercase font-semibold text-gray-500">Наше решение</h3>
+                            <p class="text-xl font-semibold text-gray-800 mt-2">Мы создаем технологичный сервис, который решает эти проблемы: <span class="text-green-600">универсальная аренда без залога</span> через страхование, удобная <span class="text-green-600">цифровая платформа</span> для заказа и специальная <span class="text-green-600">программа лояльности</span> для профессионалов.</p>
+                        </div>
+
+                         <div class="p-6 bg-gray-50 rounded-lg">
+                            <h3 class="text-sm uppercase font-semibold text-gray-500">Предложение инвестору</h3>
+                            <p class="text-xl font-semibold text-gray-800 mt-2">Приглашаем к участию в проекте с высоким потенциалом роста на стабильном и понятном рынке. Для закупки оборудования, запуска и выхода на операционную прибыль требуются инвестиции в размере:</p>
+                             <div class="text-center my-6">
+                                <span class="text-5xl font-bold text-blue-600" id="pitch_investment_ask">4,850,000 ₽</span>
+                            </div>
+                            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                <div class="bg-white p-4 rounded-lg border">
+                                    <div class="text-sm text-gray-600">Прогнозируемый срок окупаемости</div>
+                                    <div id="pitch_payback" class="text-2xl font-bold text-gray-800">28 мес.</div>
                                 </div>
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    <h4 class="font-semibold">👷‍♂️ Профессиональные бригады</h4>
-                                    <p class="text-sm text-gray-600">Небольшие строительные и ремонтные бригады. Арендуют специфический или дорогой инструмент под конкретный проект. Ценят надежность и широкий ассортимент.</p>
+                                <div class="bg-white p-4 rounded-lg border">
+                                    <div class="text-sm text-gray-600">Прогнозируемый ROI за 3 года</div>
+                                    <div id="pitch_roi" class="text-2xl font-bold text-gray-800">145%</div>
                                 </div>
-                                 <div class="p-4 bg-gray-50 rounded-lg">
-                                    <h4 class="font-semibold">🏢 Юридические лица</h4>
-                                    <p class="text-sm text-gray-600">Управляющие компании, event-агентства, производственные компании, которым инструмент нужен для разовых задач. Ценят безналичный расчет и документооборот.</p>
+                                 <div class="bg-white p-4 rounded-lg border">
+                                    <div class="text-sm text-gray-600">Прогнозируемый IRR</div>
+                                    <div id="pitch_irr" class="text-2xl font-bold text-gray-800">48%</div>
                                 </div>
                             </div>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">Конкурентный анализ</h3>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm">
-                                    <thead class="bg-gray-100">
-                                        <tr>
-                                            <th class="p-3 font-medium">Критерий</th>
-                                            <th class="p-3 font-medium text-center">Наш прокат</th>
-                                            <th class="p-3 font-medium text-center">Конкурент 1</th>
-                                            <th class="p-3 font-medium text-center">Конкурент 2</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="border-b">
-                                            <td class="p-3">Ассортимент</td>
-                                            <td class="p-3 text-center text-green-600 font-bold">Широкий, фокус на популярные модели</td>
-                                            <td class="p-3 text-center">Средний</td>
-                                            <td class="p-3 text-center">Узкий, строительный</td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="p-3">Ценообразование</td>
-                                            <td class="p-3 text-center text-green-600 font-bold">Гибкое, скидки</td>
-                                            <td class="p-3 text-center">Среднерыночное</td>
-                                            <td class="p-3 text-center">Высокое</td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="p-3">Онлайн-бронирование</td>
-                                            <td class="p-3 text-center text-green-600 font-bold">✅ Есть</td>
-                                            <td class="p-3 text-center">❌ Нет</td>
-                                            <td class="p-3 text-center">❌ Нет</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="p-3">Страхование инструмента</td>
-                                            <td class="p-3 text-center text-green-600 font-bold">✅ Опционально</td>
-                                            <td class="p-3 text-center">❌ Нет</td>
-                                            <td class="p-3 text-center">❌ Нет</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="finance" class="content-section">
-                <div class="card">
-                     <h2 class="text-2xl font-bold mb-4 text-gray-700">Интерактивная финансовая модель</h2>
-                    <p class="text-gray-600 mb-6">Это основной инструмент для оценки жизнеспособности бизнеса. Изменяйте значения в блоке "Параметры моделирования", чтобы увидеть, как разные сценарии влияют на доходы, расходы и, самое главное, на срок окупаемости ваших инвестиций. Графики и ключевые показатели ниже обновятся автоматически.</p>
-
-                    <div class="bg-stone-50 p-6 rounded-lg border border-stone-200 mb-8">
-                        <h3 class="text-xl font-semibold mb-4 text-stone-800">Параметры моделирования</h3>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <div>
-                                <label for="initialInvestment" class="block font-medium text-sm text-gray-700">Первоначальные инвестиции, ₽</label>
-                                <input type="range" id="initialInvestment" min="500000" max="1500000" value="850000" step="50000">
-                                <div class="text-center font-bold text-lg text-stone-700 mt-2"><span id="initialInvestmentValue">850 000</span> ₽</div>
-                            </div>
-                            <div>
-                                <label for="avgRentalsPerDay" class="block font-medium text-sm text-gray-700">Среднее кол-во аренд в день</label>
-                                <input type="range" id="avgRentalsPerDay" min="3" max="15" value="7" step="1">
-                                <div class="text-center font-bold text-lg text-stone-700 mt-2"><span id="avgRentalsPerDayValue">7</span></div>
-                            </div>
-                             <div>
-                                <label for="avgCheck" class="block font-medium text-sm text-gray-700">Средний чек аренды, ₽</label>
-                                <input type="range" id="avgCheck" min="500" max="1500" value="800" step="50">
-                                <div class="text-center font-bold text-lg text-stone-700 mt-2"><span id="avgCheckValue">800</span> ₽</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid md:grid-cols-3 gap-4 text-center mb-8">
-                        <div class="p-4 bg-green-100 rounded-lg">
-                            <div class="text-sm text-green-800">Выручка за 1-й год</div>
-                            <div id="totalRevenue" class="text-2xl font-bold text-green-900">1 411 200 ₽</div>
-                        </div>
-                        <div class="p-4 bg-red-100 rounded-lg">
-                             <div class="text-sm text-red-800">Чистая прибыль за 1-й год</div>
-                            <div id="netProfit" class="text-2xl font-bold text-red-900">487 200 ₽</div>
-                        </div>
-                        <div class="p-4 bg-blue-100 rounded-lg">
-                             <div class="text-sm text-blue-800">Срок окупаемости</div>
-                            <div id="paybackPeriod" class="text-2xl font-bold text-blue-900">21 мес.</div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-xl font-semibold mb-4 text-center">Финансовые потоки и окупаемость (прогноз на 24 мес.)</h3>
-                        <div class="chart-container">
-                            <canvas id="financialChart"></canvas>
                         </div>
                     </div>
                 </div>
             </section>
             
-            <section id="operations" class="content-section">
+            <section id="implementation" class="content-section">
                 <div class="card">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Операционный план и Программное обеспечение</h2>
-                     <p class="text-gray-600 mb-6">Эффективные операции — основа стабильного дохода. Здесь описаны ежедневные процессы, от приема заказа до возврата инструмента, а также рекомендованное программное обеспечение для автоматизации и контроля всех этапов работы. Правильно выстроенные процессы минимизируют риски и повышают лояльность клиентов.</p>
-                    
-                    <h3 class="text-xl font-semibold mb-3">Алгоритм работы с клиентом (скрипт)</h3>
-                    <div class="relative pl-6">
-                        <div class="absolute left-0 top-0 h-full w-0.5 bg-gray-200"></div>
-                        <div class="relative mb-6">
-                            <div class="absolute -left-[35px] top-1 w-8 h-8 bg-blue-500 rounded-full text-white flex items-center justify-center font-bold">1</div>
-                            <h4 class="font-semibold">Бронирование</h4>
-                            <p class="text-sm text-gray-600">Клиент обращается по телефону, через сайт или мессенджер. Менеджер уточняет наличие, консультирует, оформляет бронь в CRM, сообщает условия (залог, документы).</p>
-                        </div>
-                        <div class="relative mb-6">
-                             <div class="absolute -left-[35px] top-1 w-8 h-8 bg-blue-500 rounded-full text-white flex items-center justify-center font-bold">2</div>
-                            <h4 class="font-semibold">Выдача инструмента</h4>
-                            <p class="text-sm text-gray-600">Клиент приходит в пункт выдачи. Менеджер проверяет паспорт, подписывает договор, принимает залог. Демонстрирует исправность инструмента, объясняет правила эксплуатации.</p>
-                        </div>
-                         <div class="relative mb-6">
-                             <div class="absolute -left-[35px] top-1 w-8 h-8 bg-blue-500 rounded-full text-white flex items-center justify-center font-bold">3</div>
-                            <h4 class="font-semibold">Возврат инструмента</h4>
-                            <p class="text-sm text-gray-600">Клиент возвращает инструмент. Менеджер проверяет его комплектность и работоспособность. Если все в порядке — возвращает залог и подписывает акт возврата.</p>
-                        </div>
-                        <div class="relative">
-                             <div class="absolute -left-[35px] top-1 w-8 h-8 bg-blue-500 rounded-full text-white flex items-center justify-center font-bold">4</div>
-                            <h4 class="font-semibold">Обработка после возврата</h4>
-                            <p class="text-sm text-gray-600">Инструмент очищается, проходит технический осмотр и готовится к следующей аренде. Статус в CRM меняется на "Свободен".</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-xl font-semibold mt-8 mb-3">Программное обеспечение</h3>
-                     <p class="text-gray-600 mb-4">Для эффективного управления рекомендуется использовать специализированную CRM-систему для арендного бизнеса. Ключевые функции:</p>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <h4 class="font-semibold">📦 Учет инвентаря</h4>
-                            <p class="text-sm text-gray-600">Каталог инструмента с фото, описаниями, историей ремонтов и статусом (свободен, в аренде, в ремонте).</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <h4 class="font-semibold">📅 Календарь бронирования</h4>
-                            <p class="text-sm text-gray-600">Визуальное отображение занятости каждого инструмента, предотвращение двойного бронирования.</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <h4 class="font-semibold">👥 Клиентская база (CRM)</h4>
-                            <p class="text-sm text-gray-600">Ведение истории аренд по каждому клиенту, "черный список", система скидок для постоянных клиентов.</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <h4 class="font-semibold">📄 Документооборот и финансы</h4>
-                            <p class="text-sm text-gray-600">Автоматическое формирование договоров, актов, учет платежей, контроль залоговых сумм.</p>
-                        </div>
-                    </div>
-                    <p class="mt-4 text-sm text-gray-500"><strong>Примеры ПО:</strong> RentProg, Booker, Booqable. Стоимость варьируется от 2000 до 5000 руб./месяц.</p>
-                </div>
-            </section>
-            
-            <section id="insurance" class="content-section">
-                <div class="card">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Взаимодействие со страховыми компаниями</h2>
-                    <p class="text-gray-600 mb-6">Партнерство со страховой компанией — это не только способ защитить свои активы, но и уникальное конкурентное преимущество. Оно повышает доверие клиентов и создает дополнительный источник дохода. Здесь подробно описаны интересы обеих сторон и шаги по построению взаимовыгодного сотрудничества.</p>
-                    
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">Интересы сторон</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <h4 class="font-semibold text-blue-700">✔ Ваш интерес (прокат)</h4>
-                                    <ul class="list-disc list-inside text-sm text-gray-600 mt-1 space-y-1">
-                                        <li>Защита дорогостоящего инструмента от поломки и кражи.</li>
-                                        <li>Снижение рисков при работе с новыми клиентами.</li>
-                                        <li>Получение агентской комиссии с каждой проданной страховки (5-15%).</li>
-                                        <li>Повышение лояльности клиентов за счет дополнительной услуги.</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-green-700">✔ Интерес страховой компании</h4>
-                                    <ul class="list-disc list-inside text-sm text-gray-600 mt-1 space-y-1">
-                                        <li>Выход на новый микро-рынок с большим потоком клиентов.</li>
-                                        <li>Продажа коробочного, простого и низкоубыточного продукта.</li>
-                                        <li>Минимальные затраты на привлечение клиента (выступаете как агент).</li>
-                                        <li>Риски минимизированы вашими мерами: проверка клиента, залог, четкий договор.</li>
-                                    </ul>
-                                </div>
+                     <h2 class="text-2xl font-bold mb-4 text-gray-700">Пошаговый план реализации проекта</h2>
+                    <p class="text-gray-600 mb-8">Запуск проекта разделен на четыре последовательных этапа, что позволяет системно и контролируемо двигаться от регистрации бизнеса до полномасштабной операционной деятельности.</p>
+                    <div class="relative pl-8">
+                        <div class="absolute left-3.5 top-0 h-full w-1 bg-gray-200"></div>
+                        
+                        <div class="relative mb-8">
+                            <div class="absolute -left-[5px] top-1.5 w-4 h-4 rounded-full bg-blue-600 ring-4 ring-white"></div>
+                            <div class="ml-10 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <h3 class="font-bold text-blue-800">Этап 1: Подготовительный (Месяц 1-2)</h3>
+                                <ul class="list-disc list-inside mt-2 text-sm text-blue-700 space-y-1">
+                                    <li>Регистрация ИП, открытие расчетного счета.</li>
+                                    <li>Поиск и заключение договора аренды помещения.</li>
+                                    <li>Разработка и юридическая выверка шаблонов договоров.</li>
+                                    <li>Проведение переговоров и заключение рамочных договоров со страховыми компаниями.</li>
+                                    <li>Создание и наполнение веб-сайта.</li>
+                                </ul>
                             </div>
                         </div>
 
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">Алгоритм начала сотрудничества</h3>
-                            <div class="space-y-4">
-                                <p><strong>Шаг 1: Подготовка.</strong> Соберите статистику: среднее количество аренд в месяц, стоимость парка инструмента, типичные поломки.</p>
-                                <p><strong>Шаг 2: Коммерческое предложение.</strong> Составьте КП для страховой, где опишите ваш бизнес, поток клиентов и предложение стать их агентом. Укажите, что вы берете на себя проверку клиентов и оформление.</p>
-                                <p><strong>Шаг 3: Переговоры.</strong> Обратитесь в отделы по работе с партнерами нескольких крупных страховых компаний в Архангельске (например, Росгосстрах, Ингосстрах, СОГАЗ). Обсудите условия: размер страховой премии для клиента, ваш комиссионный процент, процедуру урегулирования убытков.</p>
-                                <p><strong>Шаг 4: Интеграция.</strong> В идеале — добиться интеграции по API для автоматического оформления полисов. На старте — ручное оформление через личный кабинет агента. Включите опцию "Застраховать инструмент" в ваш договор аренды и на сайт.</p>
+                         <div class="relative mb-8">
+                            <div class="absolute -left-[5px] top-1.5 w-4 h-4 rounded-full bg-amber-600 ring-4 ring-white"></div>
+                             <div class="ml-10 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                <h3 class="font-bold text-amber-800">Этап 2: Запуск и оснащение (Месяц 2-3)</h3>
+                                <ul class="list-disc list-inside mt-2 text-sm text-amber-700 space-y-1">
+                                    <li>Проведение ремонта и обустройства пункта выдачи.</li>
+                                    <li>Закупка и доставка стартового парка оборудования (Фаза 1).</li>
+                                    <li>Покупка и постановка на учет транспортного средства.</li>
+                                    <li>Закупка и настройка IT-инфраструктуры, внедрение CRM-системы.</li>
+                                    <li>Оснащение оборудования GPS-трекерами.</li>
+                                </ul>
                             </div>
                         </div>
-                    </div>
-                    <div class="mt-8 bg-amber-50 p-6 rounded-lg border border-amber-200">
-                        <h4 class="text-lg font-semibold text-amber-800">Пример продукта для клиента</h4>
-                        <p class="text-amber-700 mt-2">Клиенту предлагается "Защита инструмента" за 10% от стоимости аренды. Например, при аренде на 1000 ₽, страховка стоит 100 ₽. Эта сумма покрывает случайные поломки на сумму до 15 000 ₽. Вы, как агент, получаете с этих 100 ₽ комиссию, например, 15 ₽. Это просто, выгодно всем и снимает головную боль как с вас, так и с клиента.</p>
+                        
+                         <div class="relative mb-8">
+                            <div class="absolute -left-[5px] top-1.5 w-4 h-4 rounded-full bg-green-600 ring-4 ring-white"></div>
+                            <div class="ml-10 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <h3 class="font-bold text-green-800">Этап 3: Старт операций (Месяц 4)</h3>
+                                <ul class="list-disc list-inside mt-2 text-sm text-green-700 space-y-1">
+                                    <li>Наем и обучение двух менеджеров-техников.</li>
+                                    <li>Запуск полномасштабной рекламной кампании в Яндекс.Директ.</li>
+                                    <li>Размещение объявлений на Avito и других площадках.</li>
+                                    <li>Официальное открытие пункта проката и обработка первых заказов.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                         <div class="relative">
+                            <div class="absolute -left-[5px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 ring-4 ring-white"></div>
+                            <div class="ml-10 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                                <h3 class="font-bold text-indigo-800">Этап 4: Рост и оптимизация (Месяц 5-12)</h3>
+                                <ul class="list-disc list-inside mt-2 text-sm text-indigo-700 space-y-1">
+                                    <li>Активное привлечение B2B-клиентов по программе "Мастер-Партнер".</li>
+                                    <li>Постоянный анализ эффективности рекламных кампаний и оптимизация бюджета.</li>
+                                    <li>Сбор обратной связи от первых клиентов для улучшения сервиса.</li>
+                                    <li>Планирование второй фазы закупки оборудования на основе анализа спроса.</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -365,249 +438,307 @@
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('nav button');
     const sections = document.querySelectorAll('.content-section');
-    const initialInvestmentSlider = document.getElementById('initialInvestment');
-    const avgRentalsPerDaySlider = document.getElementById('avgRentalsPerDay');
-    const avgCheckSlider = document.getElementById('avgCheck');
-    const initialInvestmentValue = document.getElementById('initialInvestmentValue');
-    const avgRentalsPerDayValue = document.getElementById('avgRentalsPerDayValue');
-    const avgCheckValue = document.getElementById('avgCheckValue');
+    let capexChartSummary, pnlChart, paybackChart;
 
-    const summaryInvest = document.getElementById('summary_invest');
-    const summaryPayback = document.getElementById('summary_payback');
-    const totalRevenueEl = document.getElementById('totalRevenue');
-    const netProfitEl = document.getElementById('netProfit');
-    const paybackPeriodEl = document.getElementById('paybackPeriod');
+    const formatCurrency = (value, fractionDigits = 0) => new Intl.NumberFormat('ru-RU', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits }).format(value);
 
-    let investmentChart, financialChart;
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.replace('tab-active', 'tab-inactive'));
+            tab.classList.replace('tab-inactive', 'tab-active');
+            sections.forEach(s => s.classList.toggle('active', s.id === tab.dataset.tab));
+        });
+    });
 
-    const formatCurrency = (value) => new Intl.NumberFormat('ru-RU').format(Math.round(value));
+    const toolCatalogData = [
+        { id: 'perf_sds_plus', name: 'Перфоратор SDS-Plus', purchase: 18000, rent: 800, rentals: 12, demand: 95, category: 'Бетон и Демонтаж', checked: true, qty: 4 },
+        { id: 'hammer_sds_max', name: 'Отбойный молоток SDS-Max', purchase: 79000, rent: 1800, rentals: 8, demand: 80, category: 'Бетон и Демонтаж', checked: true, qty: 2 },
+        { id: 'mixer_140l', name: 'Бетономешалка 140 л', purchase: 11000, rent: 700, rentals: 7, demand: 60, category: 'Бетон и Демонтаж', checked: true, qty: 2 },
+        { id: 'vibro_100kg', name: 'Виброплита (80-100 кг)', purchase: 176000, rent: 2500, rentals: 6, demand: 75, category: 'Бетон и Демонтаж', checked: true, qty: 1 },
+        { id: 'ugm_125', name: 'УШМ ("Болгарка") 125 мм', purchase: 25000, rent: 700, rentals: 15, demand: 98, category: 'Резка и Шлифовка', checked: true, qty: 4 },
+        { id: 'ugm_230', name: 'УШМ ("Болгарка") 230 мм', purchase: 19000, rent: 850, rentals: 10, demand: 90, category: 'Резка и Шлифовка', checked: true, qty: 2 },
+        { id: 'benzorez_350', name: 'Бензорез 350 мм', purchase: 135000, rent: 2200, rentals: 8, demand: 85, category: 'Резка и Шлифовка', checked: true, qty: 1 },
+        { id: 'shtroborez', name: 'Штроборез', purchase: 45000, rent: 1500, rentals: 9, demand: 70, category: 'Резка и Шлифовка', checked: true, qty: 1 },
+        { id: 'svarka', name: 'Сварочный инвертор (MMA)', purchase: 9100, rent: 600, rentals: 8, demand: 75, category: 'Сварка и Нагрев', checked: true, qty: 2 },
+        { id: 'heatgun_diesel', name: 'Тепловая пушка дизельная', purchase: 58700, rent: 1200, rentals: 10, demand: 92, category: 'Сварка и Нагрев', checked: true, qty: 2 },
+        { id: 'heatgun_gas', name: 'Тепловая пушка газовая', purchase: 20400, rent: 800, rentals: 12, demand: 90, category: 'Сварка и Нагрев', checked: true, qty: 3 },
+        { id: 'laser_level', name: 'Лазерный нивелир 360°', purchase: 19990, rent: 750, rentals: 14, demand: 88, category: 'Измерение и Контроль', checked: true, qty: 2 },
+        { id: 'laser_range', name: 'Лазерный дальномер', purchase: 3690, rent: 400, rentals: 10, demand: 70, category: 'Измерение и Контроль', checked: true, qty: 3 },
+        { id: 'thermal_imager', name: 'Тепловизор', purchase: 25000, rent: 1500, rentals: 5, demand: 50, category: 'Измерение и Контроль', checked: true, qty: 1 },
+        { id: 'chainsaw', name: 'Бензопила', purchase: 29990, rent: 900, rentals: 10, demand: 85, category: 'Садовая техника', checked: true, qty: 2 },
+        { id: 'ground_drill', name: 'Мотобур', purchase: 20000, rent: 1000, rentals: 8, demand: 65, category: 'Садовая техника', checked: true, qty: 1 },
+        { id: 'vacuum', name: 'Промышленный пылесос', purchase: 10000, rent: 600, rentals: 12, demand: 80, category: 'Прочее', checked: true, qty: 2 },
+        { id: 'ladder', name: 'Лестница-трансформер', purchase: 15000, rent: 500, rentals: 9, demand: 78, category: 'Прочее', checked: true, qty: 2 }
+    ];
 
-    const initialData = {
-        investment: 850000,
-        rentalsPerDay: 7,
-        avgCheck: 800,
+    const baseline = {
+        fixedCapex: {
+            transport: 600000,
+            fitOut: 350000,
+            it: 200000,
+            legal: 20000,
+            marketingLaunch: 150000
+        },
+        workingCapital: 1000000,
+        fixedOpex: {
+            rent: 42000,
+            fot: 200000,
+            marketing: 50000,
+            bookkeeping: 10000,
+            software: 2000,
+            insurance: 1500,
+            admin: 5000
+        },
+        variableOpexRate: {
+            maintenance: 0.03,
+            fuel: 0.01,
+            consumables: 0.02
+        },
+        taxRate: 0.15,
+        seasonality: [-0.2, -0.2, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, -0.1, -0.1, -0.1, -0.2],
     };
 
-    const costStructure = {
-        rent: 40000, 
-        salary: 45000, 
-        taxes: 20000, 
-        marketing: 15000,
-        software: 3000,
-        other: 5000 
-    };
+    const toolCatalogContainer = document.getElementById('tool-catalog');
+
+    function populateToolCatalog() {
+        const categories = [...new Set(toolCatalogData.map(t => t.category))];
+        categories.forEach(category => {
+            const categoryWrapper = document.createElement('div');
+            categoryWrapper.className = 'border-t';
+            const header = document.createElement('div');
+            header.className = 'collapsible-header flex justify-between items-center p-2 bg-gray-100 hover:bg-gray-200';
+            header.innerHTML = `<h4 class="font-semibold">${category}</h4><span class="transform transition-transform duration-300">▶</span>`;
+            
+            const content = document.createElement('div');
+            content.className = 'collapsible-content';
+            
+            const ul = document.createElement('ul');
+            ul.className = 'p-2 space-y-3';
+            toolCatalogData.filter(t => t.category === category).forEach(tool => {
+                const li = document.createElement('li');
+                li.className = 'grid grid-cols-12 gap-2 items-center text-sm';
+                li.dataset.id = tool.id;
+
+                li.innerHTML = `
+                    <div class="col-span-12 md:col-span-6 flex items-center">
+                        <input type="checkbox" data-prop="checked" class="mr-2" ${tool.checked ? 'checked' : ''}>
+                        <label>${tool.name} (x${tool.qty})</label>
+                        <span class="ml-auto text-xs text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded"> ${tool.demand}%</span>
+                    </div>
+                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="purchase" class="input-number-sm" value="${tool.purchase}"></div>
+                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="rent" class="input-number-sm" value="${tool.rent}"></div>
+                    <div class="col-span-4 md:col-span-2"><input type="number" data-prop="rentals" class="input-number-sm" value="${tool.rentals}"></div>
+                `;
+                ul.appendChild(li);
+            });
+            content.appendChild(ul);
+            categoryWrapper.appendChild(header);
+            categoryWrapper.appendChild(content);
+            toolCatalogContainer.appendChild(categoryWrapper);
+        });
+
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('span');
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.style.transform = 'rotate(90deg)';
+                }
+            });
+        });
+        
+        toolCatalogContainer.addEventListener('change', updateUI);
+    }
     
-    const getMonthlyCosts = () => Object.values(costStructure).reduce((a, b) => a + b, 0);
+    function calculateFinancials() {
+        // Read current state from interactive elements
+        const selectedTools = [];
+        let toolCapex = 0;
+        let monthlyRevenue = 0;
+        
+        document.querySelectorAll('#tool-catalog li').forEach(li => {
+            const toolId = li.dataset.id;
+            const originalTool = toolCatalogData.find(t => t.id === toolId);
+            const isChecked = li.querySelector('[data-prop="checked"]').checked;
+            
+            if (isChecked) {
+                const purchasePrice = parseFloat(li.querySelector('[data-prop="purchase"]').value) || 0;
+                const rentPrice = parseFloat(li.querySelector('[data-prop="rent"]').value) || 0;
+                const rentals = parseFloat(li.querySelector('[data-prop="rentals"]').value) || 0;
+                
+                toolCapex += purchasePrice * originalTool.qty;
+                monthlyRevenue += rentPrice * rentals * originalTool.qty;
+            }
+        });
 
-    function calculateFinancials(investment, rentalsPerDay, avgCheck) {
-        const workingDaysPerMonth = 24;
-        const monthlyRevenue = rentalsPerDay * avgCheck * workingDaysPerMonth;
-        const monthlyCosts = getMonthlyCosts();
-        const monthlyProfit = monthlyRevenue - monthlyCosts;
+        const fixedCapexTotal = Object.values(baseline.fixedCapex).reduce((a, b) => a + b, 0);
+        const totalInvestment = toolCapex + fixedCapexTotal;
+        const depreciationMonthly = toolCapex / 36;
+        
+        const rentOpex = parseFloat(document.getElementById('rentSlider').value);
+        const fotOpex = parseFloat(document.getElementById('fotSlider').value);
+        const marketingOpex = parseFloat(document.getElementById('marketingSliderFin').value);
+        
+        const fixedOpexTotal = rentOpex + fotOpex + marketingOpex 
+            + baseline.fixedOpex.bookkeeping + baseline.fixedOpex.software 
+            + baseline.fixedOpex.insurance + baseline.fixedOpex.admin;
 
         const results = {
-            monthlyRevenue,
-            monthlyCosts,
-            monthlyProfit,
-            revenueHistory: [],
-            costHistory: [],
-            profitHistory: [],
-            cumulativeProfitHistory: [],
-            paybackMonths: 0,
+            revenue: [], ebitda: [], netProfit: [], cumulativeCashFlow: [], toolCapex
         };
-
-        let cumulativeProfit = -investment;
-        for (let month = 1; month <= 24; month++) {
-            let currentMonthRevenue = monthlyRevenue;
-            if (month <= 3) currentMonthRevenue *= 0.7; 
-            if (month > 3 && month <= 6) currentMonthRevenue *= 0.9;
-            if (month > 12) currentMonthRevenue *= 1.1; 
-
-            const currentMonthProfit = currentMonthRevenue - monthlyCosts;
-            cumulativeProfit += currentMonthProfit;
-            
-            results.revenueHistory.push(currentMonthRevenue);
-            results.costHistory.push(monthlyCosts);
-            results.profitHistory.push(currentMonthProfit);
-            results.cumulativeProfitHistory.push(cumulativeProfit);
-
-            if (cumulativeProfit > 0 && results.paybackMonths === 0) {
-                const prevCumulativeProfit = results.cumulativeProfitHistory[month - 2] || -investment;
-                const profitInPaybackMonth = currentMonthProfit;
-                results.paybackMonths = (month - 1) + (-prevCumulativeProfit / profitInPaybackMonth);
-            }
-        }
         
-        if (results.paybackMonths === 0) results.paybackMonths = 25;
+        let cumulativeFlow = -totalInvestment;
+        
+        const utilizationGrowth = [0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1, 1, 1, 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2];
+
+        for (let i = 0; i < 36; i++) {
+            const seasonalFactor = 1 + baseline.seasonality[i % 12];
+            const currentRevenue = monthlyRevenue * utilizationGrowth[i] * seasonalFactor;
+            
+            const variableCostsTotal = currentRevenue * Object.values(baseline.variableOpexRate).reduce((a, b) => a + b, 0);
+            const totalOpex = fixedOpexTotal + variableCostsTotal;
+
+            const ebitda = currentRevenue - totalOpex;
+            const ebit = ebitda - depreciationMonthly;
+            const tax = ebit > 0 ? ebit * baseline.taxRate : 0;
+            const netProfit = ebit - tax;
+            
+            const cashFlow = netProfit + depreciationMonthly;
+            cumulativeFlow += cashFlow;
+
+            results.revenue.push(currentRevenue);
+            results.ebitda.push(ebitda);
+            results.netProfit.push(netProfit);
+            results.cumulativeCashFlow.push(cumulativeFlow);
+        }
 
         return results;
     }
 
-    function updateUI() {
-        const investment = parseInt(initialInvestmentSlider.value);
-        const rentalsPerDay = parseInt(avgRentalsPerDaySlider.value);
-        const avgCheck = parseInt(avgCheckSlider.value);
-
-        initialInvestmentValue.textContent = formatCurrency(investment);
-        avgRentalsPerDayValue.textContent = rentalsPerDay;
-        avgCheckValue.textContent = formatCurrency(avgCheck);
-        summaryInvest.textContent = formatCurrency(investment);
-
-        const data = calculateFinancials(investment, rentalsPerDay, avgCheck);
-
-        const totalRevenueYear1 = data.revenueHistory.slice(0, 12).reduce((a, b) => a + b, 0);
-        const netProfitYear1 = data.profitHistory.slice(0, 12).reduce((a, b) => a + b, 0);
-        const payback = data.paybackMonths > 24 ? '> 24' : Math.ceil(data.paybackMonths);
-
-        totalRevenueEl.textContent = `${formatCurrency(totalRevenueYear1)} ₽`;
-        netProfitEl.textContent = `${formatCurrency(netProfitYear1)} ₽`;
-        paybackPeriodEl.textContent = `${payback} мес.`;
-        summaryPayback.textContent = payback;
-
-        updateFinancialChart(data);
+    function calculateIRR(cashflows, initialInvestment) {
+        const flows = [-initialInvestment, ...cashflows];
+        let irr = 0.1;
+        let npv = 1;
+        let attempts = 0;
+        while (Math.abs(npv) > 0.01 && attempts < 1000) {
+            npv = flows.reduce((acc, val, i) => acc + val / Math.pow(1 + irr, i), 0);
+            if (npv > 0) { irr += 0.001; } else { irr -= 0.001; }
+            attempts++;
+        }
+        return irr > 0 ? irr * 100 : 0;
     }
-    
-    function createInvestmentChart() {
-        const ctx = document.getElementById('investmentChart').getContext('2d');
-        const investmentData = {
-            labels: ['Закупка инструмента', 'Аренда помещения (2 мес)', 'Ремонт и мебель', 'Реклама', 'Регистрация и прочее'],
+
+    function updateUI() {
+        const data = calculateFinancials();
+
+        const totalRevenue = data.revenue.reduce((a, b) => a + b, 0);
+        const totalNetProfit = data.netProfit.reduce((a, b) => a + b, 0);
+
+        let paybackMonths = 'N/A';
+        const paybackIndex = data.cumulativeCashFlow.findIndex(p => p >= 0);
+        if (paybackIndex !== -1) { paybackMonths = `${paybackIndex + 1} мес.`; }
+        
+        const fixedCapexTotal = Object.values(baseline.fixedCapex).reduce((a, b) => a + b, 0);
+        const totalInvestment = data.toolCapex + fixedCapexTotal;
+        const totalInvestmentWithWC = totalInvestment + baseline.workingCapital;
+        
+        const yearlyCashFlows = [
+            data.netProfit.slice(0, 12).reduce((a, b) => a + b, 0) + (data.toolCapex / 3),
+            data.netProfit.slice(12, 24).reduce((a, b) => a + b, 0) + (data.toolCapex / 3),
+            data.netProfit.slice(24, 36).reduce((a, b) => a + b, 0) + (data.toolCapex / 3),
+        ];
+        const irr = calculateIRR(yearlyCashFlows, totalInvestment);
+        const roi = totalInvestment > 0 ? (totalNetProfit / totalInvestment) * 100 : 0;
+
+        document.getElementById('rentValue').textContent = formatCurrency(document.getElementById('rentSlider').value);
+        document.getElementById('fotValue').textContent = formatCurrency(document.getElementById('fotSlider').value);
+        document.getElementById('marketingValueFin').textContent = formatCurrency(document.getElementById('marketingSliderFin').value);
+        document.getElementById('totalToolCapex').textContent = `${formatCurrency(data.toolCapex)} ₽`;
+        
+        document.getElementById('summary_investment').textContent = `${formatCurrency(totalInvestmentWithWC)} ₽`;
+        document.getElementById('summary_payback').textContent = paybackMonths;
+        document.getElementById('summary_roi').textContent = `${formatCurrency(roi)}%`;
+        document.getElementById('summary_revenue_y3').textContent = `${formatCurrency(data.revenue.slice(24,36).reduce((a,b)=>a+b,0) / 1000000, 2)} млн ₽`;
+        
+        document.getElementById('fin_totalRevenue').textContent = `${formatCurrency(totalRevenue/1000000, 1)} млн ₽`;
+        document.getElementById('fin_totalNetProfit').textContent = `${formatCurrency(totalNetProfit/1000000, 1)} млн ₽`;
+        document.getElementById('fin_payback').textContent = paybackMonths;
+        document.getElementById('fin_irr').textContent = `${formatCurrency(irr, 1)}%`;
+
+        document.getElementById('pitch_investment_ask').textContent = `${formatCurrency(totalInvestmentWithWC)} ₽`;
+        document.getElementById('pitch_payback').textContent = paybackMonths;
+        document.getElementById('pitch_roi').textContent = `${formatCurrency(roi)}%`;
+        document.getElementById('pitch_irr').textContent = `${formatCurrency(irr, 1)}%`;
+        
+        updateCharts(data, totalInvestment);
+    }
+
+    function initCharts() {
+        capexChartSummary = new Chart(document.getElementById('capexChartSummary').getContext('2d'), {
+            type: 'doughnut',
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        pnlChart = new Chart(document.getElementById('pnlChart').getContext('2d'), {
+            type: 'bar',
+            data: { 
+                labels: Array.from({length: 36}, (_, i) => `${i + 1}`),
+                datasets: [
+                    { label: 'Выручка', type: 'bar', data: [], backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+                    { label: 'Чистая прибыль', type: 'line', data: [], borderColor: '#A37F5A', tension: 0.3, fill: false }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: {display: true, text: 'Месяц'} }, y: { ticks: { callback: (v) => `${v/1000}k` } } }, plugins: { tooltip: { mode: 'index' } } }
+        });
+
+        paybackChart = new Chart(document.getElementById('paybackChart').getContext('2d'), {
+             type: 'line', 
+             data: { 
+                 labels: Array.from({length: 36}, (_, i) => `${i + 1}`), 
+                 datasets: [{ label: 'Накопленный денежный поток', data: [], borderColor: '#4A90E2', backgroundColor: 'rgba(74, 144, 226, 0.1)', fill: true, tension: 0.1 }] 
+             },
+             options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: {display: true, text: 'Месяц'} }, y: { ticks: { callback: (v) => `${v/1000}k ₽` } } } }
+        });
+    }
+
+    function updateCharts(data, totalInvestment) {
+        const fixedCapex = baseline.fixedCapex;
+        capexChartSummary.data = {
+            labels: ['Оборудование', 'Транспорт', 'Обустройство', 'Оборотный капитал', 'IT и прочее'],
             datasets: [{
-                label: 'Структура инвестиций',
-                data: [500000, 80000, 120000, 100000, 50000],
+                data: [
+                    data.toolCapex,
+                    fixedCapex.transport,
+                    fixedCapex.fitOut,
+                    baseline.workingCapital,
+                    fixedCapex.it + fixedCapex.legal + fixedCapex.marketingLaunch
+                ],
                 backgroundColor: ['#4A90E2', '#50E3C2', '#F5A623', '#F8E71C', '#BD10E0'],
                 borderColor: '#FFFFFF',
                 borderWidth: 2
             }]
         };
-        investmentChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: investmentData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed !== null) {
-                                    label += new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(context.parsed);
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            },
-        });
-    }
+        capexChartSummary.update();
+        
+        pnlChart.data.datasets[0].data = data.revenue;
+        pnlChart.data.datasets[1].data = data.netProfit;
+        pnlChart.update();
 
-    function createFinancialChart() {
-        const ctx = document.getElementById('financialChart').getContext('2d');
-        financialChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Array.from({length: 24}, (_, i) => `Мес ${i + 1}`),
-                datasets: [
-                    {
-                        label: 'Выручка',
-                        data: [],
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
-                        order: 2,
-                    },
-                    {
-                        label: 'Расходы',
-                        data: [],
-                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1,
-                        order: 2,
-                    },
-                    {
-                        label: 'Накопленная прибыль',
-                        data: [],
-                        type: 'line',
-                        borderColor: '#C5A07A',
-                        backgroundColor: 'transparent',
-                        yAxisID: 'y1',
-                        tension: 0.1,
-                        order: 1,
-                        pointRadius: 2,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Сумма, ₽' }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                        title: { display: true, text: 'Накопленная прибыль, ₽' }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                    }
-                }
-            }
-        });
-    }
-
-    function updateFinancialChart(data) {
-        financialChart.data.datasets[0].data = data.revenueHistory;
-        financialChart.data.datasets[1].data = data.costHistory;
-        financialChart.data.datasets[2].data = data.cumulativeProfitHistory;
-        financialChart.update();
+        paybackChart.data.datasets[0].data = data.cumulativeCashFlow;
+        paybackChart.update();
     }
     
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-
-            tabs.forEach(t => {
-                t.classList.remove('tab-active');
-                t.classList.add('tab-inactive');
-            });
-            tab.classList.add('tab-active');
-            tab.classList.remove('tab-inactive');
-
-            sections.forEach(section => {
-                if (section.id === target) {
-                    section.classList.add('active');
-                } else {
-                    section.classList.remove('active');
-                }
-            });
-        });
-    });
-
-    initialInvestmentSlider.addEventListener('input', updateUI);
-    avgRentalsPerDaySlider.addEventListener('input', updateUI);
-    avgCheckSlider.addEventListener('input', updateUI);
-
-    createInvestmentChart();
-    createFinancialChart();
+    [document.getElementById('rentSlider'), document.getElementById('fotSlider'), document.getElementById('marketingSliderFin')].forEach(s => s.addEventListener('input', updateUI));
+    
+    populateToolCatalog();
+    initCharts();
     updateUI();
 });
 </script>
 </body>
 </html>
+
